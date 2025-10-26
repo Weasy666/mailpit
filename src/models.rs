@@ -3,11 +3,12 @@ use std::collections::HashMap;
 use base64::{Engine, prelude::BASE64_STANDARD};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use url::Url;
 
 use crate::error::Error;
 
 /// Application information
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 pub struct ApplicationInformation {
     /// Database path
@@ -28,7 +29,7 @@ pub struct ApplicationInformation {
     pub version: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 /// Runtime statistics
 pub struct RuntimeStats {
@@ -52,7 +53,7 @@ pub struct RuntimeStats {
     pub uptime: usize,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 /// Web UI configuration response
 pub struct WebUIConfiguration {
@@ -70,7 +71,7 @@ pub struct WebUIConfiguration {
     pub spam_assassin: bool,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 /// Message Relay information
 pub struct MessageRelay {
@@ -92,7 +93,7 @@ pub struct MessageRelay {
     pub smtp_server: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq)]
 /// MessagesSummary is a summary of a list of messages
 pub struct MessagesSummary {
     /// Messages summary in: body
@@ -111,7 +112,7 @@ pub struct MessagesSummary {
     pub unread: usize,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 pub struct MessageBase<T> {
     /// Message attachments
@@ -145,7 +146,7 @@ pub struct MessageBase<T> {
     pub username: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 pub struct MessageInfo {
     #[serde(flatten)]
@@ -225,7 +226,7 @@ impl MessageInfo {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 /// Message data excluding physical attachments
 pub struct MessageSummary {
@@ -315,17 +316,18 @@ impl MessageSummary {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 /// Email address object
 pub struct AddressObject {
     /// Address
+    #[serde(rename(serialize = "Email"))]
     pub address: String,
     /// Name
     pub name: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 /// Message attachment info
 pub struct AttachmentInfo {
@@ -343,7 +345,7 @@ pub struct AttachmentInfo {
     pub size: usize,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 /// ListUnsubscribe contains a summary of List-Unsubscribe &
 /// List-Unsubscribe-Post headers including validation of the link
@@ -362,17 +364,17 @@ pub struct ListUnsubscribe {
 /// Message headers
 pub type MessageHeaders = HashMap<String, Vec<String>>;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 pub(crate) struct ReleaseMessageParams<'a> {
     pub(crate) to: &'a [&'a str],
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 pub struct SendMessage {
     /// Attachments
-    pub attachments: Vec<Attachment>,
+    pub attachments: Option<Vec<Attachment>>,
     /// Bcc recipients email addresses only
     pub bcc: Option<Vec<String>>,
     /// Cc recipients
@@ -396,7 +398,7 @@ pub struct SendMessage {
     pub to: Vec<AddressObject>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 pub struct Attachment {
     /// Base64-encoded string of the file content
@@ -422,7 +424,7 @@ impl Attachment {
 
 /// Builder to create an [`Attachment`].
 pub struct AttachmentBuilder<'a> {
-    content: Option<&'a str>,
+    content: Option<&'a [u8]>,
     content_id: Option<&'a str>,
     content_type: Option<&'a str>,
     filename: Option<&'a str>,
@@ -440,7 +442,7 @@ impl<'a> AttachmentBuilder<'a> {
     }
 
     /// String of the file content. Will be Base64-encoded on build.
-    pub fn content(mut self, content: &'a str) -> Self {
+    pub fn content(mut self, content: &'a [u8]) -> Self {
         self.content = Some(content);
         self
     }
@@ -485,7 +487,7 @@ impl<'a> AttachmentBuilder<'a> {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq)]
 /// Confirmation message for HTTP send API
 pub struct SendMessageResponse {
     /// Database ID
@@ -493,7 +495,7 @@ pub struct SendMessageResponse {
     pub id: String,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 pub(crate) struct SetReadStatusParams<'a> {
     /// Optional array of message database IDs
@@ -505,24 +507,48 @@ pub(crate) struct SetReadStatusParams<'a> {
     pub(crate) search: Option<&'a str>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, PartialEq)]
 pub(crate) struct DeleteMessagesFilter<'a> {
+    #[serde(rename = "IDs")]
     pub(crate) ids: &'a [&'a str],
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 /// Response represents the HTML check response struct
 pub struct HtmlCheckResponse {
     /// All platforms tested, mainly for the web UI
-    pub platforms: HashMap<String, String>,
+    pub platforms: HashMap<String, Vec<String>>,
     /// Total weighted result for all scores
     pub total: HtmlTotalScores,
     /// List of warnings from tests
     pub warnings: Vec<HtmlWarning>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq)]
+#[serde(rename_all = "PascalCase")]
+/// Response represents the Link check response
+pub struct LinkCheckResponse {
+    /// Total number of errors
+    pub errors: usize,
+    /// Tested links
+    pub links: Vec<TestedLink>,
+}
+
+#[derive(Debug, Deserialize, PartialEq)]
+#[serde(rename_all = "PascalCase")]
+/// Tested link
+pub struct TestedLink {
+    /// HTTP status definition
+    pub status: String,
+    /// HTTP status code
+    pub status_code: usize,
+    /// Link URL
+    #[serde(rename = "URL")]
+    pub url: Url,
+}
+
+#[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 /// Total weighted result for all scores
 pub struct HtmlTotalScores {
@@ -538,7 +564,7 @@ pub struct HtmlTotalScores {
     pub unsupported: f32,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 /// List of warnings from tests
 pub struct HtmlWarning {
@@ -565,7 +591,7 @@ pub struct HtmlWarning {
     pub url: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 /// Test results
 pub struct WarningResult {
@@ -583,7 +609,7 @@ pub struct WarningResult {
     pub version: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 /// Score struct
 pub struct WarningScore {
@@ -597,7 +623,7 @@ pub struct WarningScore {
     pub unsupported: f32,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 /// Result is a SpamAssassin result
 pub struct SpamAssassinResponse {
@@ -611,7 +637,7 @@ pub struct SpamAssassinResponse {
     pub score: f32,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 /// Spam rule
 pub struct SpamRule {
@@ -626,7 +652,7 @@ pub struct SpamRule {
 /// Tag array
 pub type TagList = Vec<String>;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 pub(crate) struct SetMessageTagsParams<'a> {
     /// Array of message database IDs
@@ -636,14 +662,14 @@ pub(crate) struct SetMessageTagsParams<'a> {
     pub(crate) tags: &'a [&'a str],
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 pub(crate) struct RenameTagParams<'a> {
     /// New name
     pub(crate) name: &'a str,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 /// Triggers for the Chaos configuration
 pub struct ChaosTriggersResponse {
@@ -655,7 +681,7 @@ pub struct ChaosTriggersResponse {
     pub sender: ChaosTrigger,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 /// Trigger for Chaos
 pub struct ChaosTrigger {
@@ -666,7 +692,7 @@ pub struct ChaosTrigger {
     pub probability: i32,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 /// Triggers for the Chaos configuration
 pub struct ChaosTriggersConfiguration {

@@ -10,8 +10,8 @@ use crate::{
     error::Error,
     models::{
         ApplicationInformation, ChaosTriggersConfiguration, ChaosTriggersResponse,
-        DeleteMessagesFilter, HtmlCheckResponse, MessageHeaders, MessageSummary, MessagesSummary,
-        ReleaseMessageParams, RenameTagParams, SendMessage, SendMessageResponse,
+        DeleteMessagesFilter, HtmlCheckResponse, LinkCheckResponse, MessageHeaders, MessageSummary,
+        MessagesSummary, ReleaseMessageParams, RenameTagParams, SendMessage, SendMessageResponse,
         SetMessageTagsParams, SetReadStatusParams, SpamAssassinResponse, TagList,
         WebUIConfiguration,
     },
@@ -97,7 +97,7 @@ impl MailpitClient {
     /// #### Errors:
     /// - __`400`__ - Server error will return with a 400 status code with the error message in the body
     /// - __`404`__ - Not found error will return a 404 status code
-    pub async fn get_message(&self, id: &str) -> Result<MessageSummary, Error> {
+    pub async fn get_message_summary(&self, id: &str) -> Result<MessageSummary, Error> {
         let response = self
             .client
             .get(format!("{}api/v1/message/{id}", self.url))
@@ -251,7 +251,7 @@ impl MailpitClient {
     ///
     /// #### Errors:
     /// - __`400`__ - Server error will return with a 400 status code with a JSON error response in the body
-    pub async fn post_send_a_message(
+    pub async fn post_send_message(
         &self,
         message: SendMessage,
     ) -> Result<SendMessageResponse, Error> {
@@ -388,8 +388,8 @@ impl MailpitClient {
     pub async fn get_search_messages(
         &self,
         query: &str,
-        start: Option<&[&str]>,
-        limit: Option<String>,
+        start: Option<usize>,
+        limit: Option<usize>,
         tz: Option<Tz>,
     ) -> Result<MessagesSummary, Error> {
         let mut builder = self
@@ -456,12 +456,44 @@ impl MailpitClient {
     ///
     /// #### Errors:
     /// - __`400`__ - Server error will return with a 400 status code with the error message in the body
+    /// - __`404`__ - Not found error will return a 404 status code
     pub async fn get_html_check(&self, id: &str) -> Result<HtmlCheckResponse, Error> {
         let response = self
             .client
             .get(format!("{}api/v1/message/{id}/html-check", self.url))
             .send()
             .await?;
+        Error::check_response(response)
+            .await?
+            .json()
+            .await
+            .map_err(Into::into)
+    }
+
+    /// #### Link check
+    /// __GET__ `/api/v1/message/{ID}/link-check`
+    ///
+    /// Returns the summary of the message Link checker.
+    ///
+    /// The ID can be set to `latest` to return the latest message.
+    ///
+    /// #### Errors:
+    /// - __`400`__ - Server error will return with a 400 status code with the error message in the body
+    /// - __`404`__ - Not found error will return a 404 status code
+    pub async fn get_link_check(
+        &self,
+        id: &str,
+        follow: Option<bool>,
+    ) -> Result<LinkCheckResponse, Error> {
+        let mut builder = self
+            .client
+            .get(format!("{}api/v1/message/{id}/link-check", self.url));
+
+        if let Some(follow) = follow {
+            builder = builder.query(&[("follow", follow.to_string())])
+        }
+
+        let response = builder.send().await?;
         Error::check_response(response)
             .await?
             .json()
@@ -543,7 +575,7 @@ impl MailpitClient {
     ///
     /// #### Errors:
     /// - __`400`__ - Server error will return with a 400 status code with the error message in the body
-    pub async fn put_rename_a_tag(&self, tag: &str, name: &str) -> Result<bool, Error> {
+    pub async fn put_rename_tag(&self, tag: &str, name: &str) -> Result<bool, Error> {
         let tag = urlencoding::encode(tag);
         let response = self
             .client
@@ -567,7 +599,7 @@ impl MailpitClient {
     ///
     /// #### Errors:
     /// - __`400`__ - Server error will return with a 400 status code with the error message in the body
-    pub async fn delete_a_tag(&self, tag: &str) -> Result<bool, Error> {
+    pub async fn delete_tag(&self, tag: &str) -> Result<bool, Error> {
         let tag = urlencoding::encode(tag);
         let response = self
             .client
@@ -677,7 +709,7 @@ impl MailpitClient {
     /// #### Errors:
     /// - __`400`__ - Server error will return with a 400 status code with the error message in the body
     /// - __`404`__ - Not found error will return a 404 status code
-    pub async fn get_render_message_test_part(&self, id: &str) -> Result<String, Error> {
+    pub async fn get_render_message_text_part(&self, id: &str) -> Result<String, Error> {
         let response = self
             .client
             .get(format!("{}view/{id}.txt", self.url))

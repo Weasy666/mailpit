@@ -1,5 +1,5 @@
 [package]
-name = "mailpit"
+name = "mailpit_client"
 version = "0.1.0"
 authors = ["Daniel Wiesenberg <weasy@hotmail.de>"]
 description = "A Mailpit REST API client"
@@ -21,3 +21,32 @@ serde_json = { version   = "1.0" }
 thiserror = { version = "2.0" }
 url = { version = "2.5" }
 urlencoding = { version = "2.1" }
+
+[dev-dependencies]
+httpmock = { version = "0.8.2" }
+pretty_assertions = { version = "1.4.1" }
+tokio = { version = "1.48.0" }
+
+[[test]]
+name = "application"
+path = "tests/application.rs"
+
+[[test]]
+name = "message"
+path = "tests/message.rs"
+
+[[test]]
+name = "messages"
+path = "tests/messages.rs"
+
+[[test]]
+name = "other"
+path = "tests/other.rs"
+
+[[test]]
+name = "tags"
+path = "tests/tags.rs"
+
+[[test]]
+name = "testing"
+path = "tests/testing.rs"
