@@ -37,7 +37,7 @@ impl MailpitClient {
     pub fn new_with_auth(url: &str, username: &str, password: &str) -> Result<Self, Error> {
         let url = Url::parse(url)?;
 
-        let encoded = BASE64_STANDARD.encode(&format!("{username}:{password}"));
+        let encoded = BASE64_STANDARD.encode(format!("{username}:{password}"));
         let mut headers = HeaderMap::new();
         let mut auth_value = HeaderValue::from_str(&format!("Basic {encoded}")).unwrap();
         auth_value.set_sensitive(true);

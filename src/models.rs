@@ -423,6 +423,7 @@ impl Attachment {
 }
 
 /// Builder to create an [`Attachment`].
+#[derive(Default)]
 pub struct AttachmentBuilder<'a> {
     content: Option<&'a [u8]>,
     content_id: Option<&'a str>,
@@ -433,12 +434,7 @@ pub struct AttachmentBuilder<'a> {
 impl<'a> AttachmentBuilder<'a> {
     /// Returns [`AttachmentBuilder`] to create an [`Attachment`].
     pub fn new() -> Self {
-        AttachmentBuilder {
-            content: None,
-            content_id: None,
-            content_type: None,
-            filename: None,
-        }
+        AttachmentBuilder::default()
     }
 
     /// String of the file content. Will be Base64-encoded on build.
