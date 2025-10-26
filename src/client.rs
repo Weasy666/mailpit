@@ -57,7 +57,7 @@ impl MailpitClient {
     pub async fn get_application_information(&self) -> Result<ApplicationInformation, Error> {
         let response = self
             .client
-            .get(format!("{}/api/v1/info", self.url))
+            .get(format!("{}api/v1/info", self.url))
             .send()
             .await?;
         Error::check_response(response)
@@ -77,7 +77,7 @@ impl MailpitClient {
     pub async fn get_webui_configuration(&self) -> Result<WebUIConfiguration, Error> {
         let response = self
             .client
-            .get(format!("{}/api/v1/webui", self.url))
+            .get(format!("{}api/v1/webui", self.url))
             .send()
             .await?;
         Error::check_response(response)
@@ -100,7 +100,7 @@ impl MailpitClient {
     pub async fn get_message(&self, id: &str) -> Result<MessageSummary, Error> {
         let response = self
             .client
-            .get(format!("{}/api/v1/message/{id}", self.url))
+            .get(format!("{}api/v1/message/{id}", self.url))
             .send()
             .await?;
         Error::check_response(response)
@@ -123,7 +123,7 @@ impl MailpitClient {
     pub async fn get_message_headers(&self, id: &str) -> Result<MessageHeaders, Error> {
         let response = self
             .client
-            .get(format!("{}/api/v1/message/{id}/headers", self.url))
+            .get(format!("{}api/v1/message/{id}/headers", self.url))
             .send()
             .await?;
         Error::check_response(response)
@@ -146,7 +146,7 @@ impl MailpitClient {
     pub async fn get_message_attachment(&self, id: &str, part_id: &str) -> Result<Bytes, Error> {
         let response = self
             .client
-            .get(format!("{}/api/v1/message/{id}/part/{part_id}", self.url))
+            .get(format!("{}api/v1/message/{id}/part/{part_id}", self.url))
             .send()
             .await?;
         Error::check_response(response)
@@ -176,7 +176,7 @@ impl MailpitClient {
         let response = self
             .client
             .get(format!(
-                "{}/api/v1/message/{id}/part/{part_id}/thumb",
+                "{}api/v1/message/{id}/part/{part_id}/thumb",
                 self.url
             ))
             .send()
@@ -201,7 +201,7 @@ impl MailpitClient {
     pub async fn get_message_source(&self, id: &str) -> Result<String, Error> {
         let response = self
             .client
-            .get(format!("{}/api/v1/message/{id}/raw", self.url))
+            .get(format!("{}api/v1/message/{id}/raw", self.url))
             .send()
             .await?;
         Error::check_response(response)
@@ -227,7 +227,7 @@ impl MailpitClient {
     pub async fn post_release_message(&self, id: &str, to: &[&str]) -> Result<bool, Error> {
         let response = self
             .client
-            .post(format!("{}/api/v1/message/{id}/release", self.url))
+            .post(format!("{}api/v1/message/{id}/release", self.url))
             .json(&ReleaseMessageParams { to })
             .send()
             .await?;
@@ -257,7 +257,7 @@ impl MailpitClient {
     ) -> Result<SendMessageResponse, Error> {
         let response = self
             .client
-            .post(format!("{}/api/v1/send", self.url))
+            .post(format!("{}api/v1/send", self.url))
             .json(&message)
             .send()
             .await?;
@@ -280,7 +280,7 @@ impl MailpitClient {
         start: Option<usize>,
         limit: Option<usize>,
     ) -> Result<MessagesSummary, Error> {
-        let mut builder = self.client.get(format!("{}/api/v1/messages", self.url));
+        let mut builder = self.client.get(format!("{}api/v1/messages", self.url));
 
         if let Some(v) = start {
             builder = builder.query(&[("start", v)]);
@@ -316,7 +316,7 @@ impl MailpitClient {
         search: Option<&str>,
         tz: Option<Tz>,
     ) -> Result<bool, Error> {
-        let mut builder = self.client.put(format!("{}/api/v1/messages", self.url));
+        let mut builder = self.client.put(format!("{}api/v1/messages", self.url));
 
         if let Some(tz) = tz {
             builder = builder.query(&[("tz", tz)]);
@@ -363,7 +363,7 @@ impl MailpitClient {
     pub async fn delete_messages(&self, message_ids: &[&str]) -> Result<bool, Error> {
         let response = self
             .client
-            .delete(format!("{}/api/v1/messages", self.url))
+            .delete(format!("{}api/v1/messages", self.url))
             .json(&DeleteMessagesFilter { ids: message_ids })
             .send()
             .await?;
@@ -394,7 +394,7 @@ impl MailpitClient {
     ) -> Result<MessagesSummary, Error> {
         let mut builder = self
             .client
-            .get(format!("{}/api/v1/search", self.url))
+            .get(format!("{}api/v1/search", self.url))
             .query(&[("query", query)]);
 
         if let Some(start) = start {
@@ -431,7 +431,7 @@ impl MailpitClient {
     ) -> Result<bool, Error> {
         let mut builder = self
             .client
-            .delete(format!("{}/api/v1/search", self.url))
+            .delete(format!("{}api/v1/search", self.url))
             .query(&[("query", query)]);
 
         if let Some(tz) = tz {
@@ -459,7 +459,7 @@ impl MailpitClient {
     pub async fn get_html_check(&self, id: &str) -> Result<HtmlCheckResponse, Error> {
         let response = self
             .client
-            .get(format!("{}/api/v1/message/{id}/html-check", self.url))
+            .get(format!("{}api/v1/message/{id}/html-check", self.url))
             .send()
             .await?;
         Error::check_response(response)
@@ -482,7 +482,7 @@ impl MailpitClient {
     pub async fn get_spam_assassin_check(&self, id: &str) -> Result<SpamAssassinResponse, Error> {
         let response = self
             .client
-            .get(format!("{}/api/v1/message/{id}/sa-check", self.url))
+            .get(format!("{}api/v1/message/{id}/sa-check", self.url))
             .send()
             .await?;
         Error::check_response(response)
@@ -502,7 +502,7 @@ impl MailpitClient {
     pub async fn get_all_current_tags(&self) -> Result<TagList, Error> {
         let response = self
             .client
-            .get(format!("{}/api/v1/tags", self.url))
+            .get(format!("{}api/v1/tags", self.url))
             .send()
             .await?;
         Error::check_response(response)
@@ -524,7 +524,7 @@ impl MailpitClient {
     pub async fn put_set_message_tags(&self, ids: &[&str], tags: &[&str]) -> Result<bool, Error> {
         let response = self
             .client
-            .put(format!("{}/api/v1/tags", self.url))
+            .put(format!("{}api/v1/tags", self.url))
             .json(&SetMessageTagsParams { ids, tags })
             .send()
             .await?;
@@ -547,7 +547,7 @@ impl MailpitClient {
         let tag = urlencoding::encode(tag);
         let response = self
             .client
-            .put(format!("{}/api/v1/tags/{tag}", self.url))
+            .put(format!("{}api/v1/tags/{tag}", self.url))
             .json(&RenameTagParams { name })
             .send()
             .await?;
@@ -571,7 +571,7 @@ impl MailpitClient {
         let tag = urlencoding::encode(tag);
         let response = self
             .client
-            .delete(format!("{}/api/v1/tags/{tag}", self.url))
+            .delete(format!("{}api/v1/tags/{tag}", self.url))
             .send()
             .await?;
         Error::check_response(response)
@@ -593,7 +593,7 @@ impl MailpitClient {
     pub async fn get_chaos_triggers(&self) -> Result<ChaosTriggersResponse, Error> {
         let response = self
             .client
-            .get(format!("{}/api/v1/chaos", self.url))
+            .get(format!("{}api/v1/chaos", self.url))
             .send()
             .await?;
         Error::check_response(response)
@@ -623,7 +623,7 @@ impl MailpitClient {
     ) -> Result<ChaosTriggersResponse, Error> {
         let response = self
             .client
-            .put(format!("{}/api/v1/chaos", self.url))
+            .put(format!("{}api/v1/chaos", self.url))
             .json(&config)
             .send()
             .await?;
@@ -652,7 +652,7 @@ impl MailpitClient {
         id: &str,
         embed: Option<bool>,
     ) -> Result<String, Error> {
-        let mut builder = self.client.get(format!("{}/view/{id}.html", self.url));
+        let mut builder = self.client.get(format!("{}view/{id}.html", self.url));
 
         if let Some(embed) = embed {
             builder = builder.query(&[("embed", embed as u8)]);
@@ -680,7 +680,7 @@ impl MailpitClient {
     pub async fn get_render_message_test_part(&self, id: &str) -> Result<String, Error> {
         let response = self
             .client
-            .get(format!("{}/view/{id}.txt", self.url))
+            .get(format!("{}view/{id}.txt", self.url))
             .send()
             .await?;
         Error::check_response(response)
